@@ -1,0 +1,94 @@
+spring:
+  application:
+    name: orden-service
+
+  datasource:
+    url: ${DB_URL:jdbc:oracle:thin:@//localhost:1521/FREEPDB1}
+    username: ${DB_USER:ordenes}
+    password: ${DB_PASSWORD:Ordenes123}
+    driver-class-name: oracle.jdbc.OracleDriver
+    hikari:
+      pool-name: orden-pool
+      maximum-pool-size: ${DB_POOL_MAX:20}
+      minimum-idle: 5
+      connection-timeout: 5000        # ms esperando conexión del pool antes de fallar
+      idle-timeout: 300000
+      max-lifetime: 1800000
+      auto-commit: false              # las transacciones las demarca Spring
+      data-source-properties:
+        oracle.jdbc.implicitStatementCacheSize: 100
+        oracle.jdbc.defaultRowPrefetch: 100
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none                  # el esquema lo gestionan los scripts SQL de /db
+    properties:
+      hibernate:
+        connection.provider_disables_autocommit: true
+        jdbc:
+          batch_size: 50
+          fetch_size: 100
+        order_inserts: true
+        order_updates: true
+        default_batch_fetch_size: 50
+        query:
+          in_clause_parameter_padding: true
+          fail_on_pagination_over_collection_fetch: true
+          plan_cache_max_size: 2048
+
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+    mapper:
+      accept-case-insensitive-enums: true
+    deserialization:
+      fail-on-unknown-properties: false
+
+  data:
+    web:
+      pageable:
+        default-page-size: 20
+        max-page-size: 100
+
+  mvc:
+    problemdetails:
+      enabled: false
+
+server:
+  port: 8080
+  shutdown: graceful
+  error:
+    include-stacktrace: never
+    include-message: never
+  tomcat:
+    threads:
+      max: 200
+    connection-timeout: 10s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+logging:
+  level:
+    root: INFO
+    com.sysman.ordenes: INFO
+    org.hibernate.SQL: WARN

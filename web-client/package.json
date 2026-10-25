@@ -1,0 +1,13 @@
+{
+  "name": "ordenes-web-client",
+  "version": "1.0.0",
+  "description": "Portal web para la gestión operativa de órdenes de servicio",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

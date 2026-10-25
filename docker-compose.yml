@@ -1,0 +1,83 @@
+name: gestion-ordenes
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # Oracle Database 23ai Free (incluye particionamiento)
+  # ---------------------------------------------------------------------------
+  oracle:
+    image: gvenzl/oracle-free:23-slim
+    container_name: ordenes-oracle
+    environment:
+      ORACLE_PASSWORD: ${ORACLE_PASSWORD:-OracleAdmin123}
+      APP_USER: ${DB_USER:-ordenes}
+      APP_USER_PASSWORD: ${DB_PASSWORD:-Ordenes123}
+      TZ: UTC
+    ports:
+      - "${ORACLE_PORT:-1521}:1521"
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+      - ./db/init:/container-entrypoint-initdb.d:ro      # se ejecuta solo con volumen vacío
+      - ./db/scripts:/opt/sql:ro                         # DDL, PL/SQL y datos semilla
+      - ./db/healthcheck-esquema.sh:/opt/healthcheck-esquema.sh:ro
+    healthcheck:
+      test: ["CMD", "bash", "/opt/healthcheck-esquema.sh"]
+      interval: 10s
+      timeout: 10s
+      retries: 60
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - ordenes-net
+
+  # ---------------------------------------------------------------------------
+  # API REST Spring Boot
+  # ---------------------------------------------------------------------------
+  orden-service:
+    build:
+      context: ./orden-service
+    image: gestion-ordenes/orden-service:1.0.0
+    container_name: orden-service
+    environment:
+      DB_URL: jdbc:oracle:thin:@//oracle:1521/FREEPDB1
+      DB_USER: ${DB_USER:-ordenes}
+      DB_PASSWORD: ${DB_PASSWORD:-Ordenes123}
+      DB_POOL_MAX: ${DB_POOL_MAX:-20}
+      JAVA_OPTS: "-XX:MaxRAMPercentage=75 -XX:+UseG1GC -Duser.timezone=UTC"
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    depends_on:
+      oracle:
+        condition: service_healthy
+    restart: on-failure
+    deploy:
+      resources:
+        limits:
+          memory: 768m
+    networks:
+      - ordenes-net
+
+  # ---------------------------------------------------------------------------
+  # Portal Web (Node.js / Express)
+  # ---------------------------------------------------------------------------
+  web-client:
+    build:
+      context: ./web-client
+    image: gestion-ordenes/web-client:1.0.0
+    container_name: ordenes-web-client
+    environment:
+      PORT: 3000
+      BACKEND_URL: http://orden-service:8080
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    depends_on:
+      - orden-service
+    restart: unless-stopped
+    networks:
+      - ordenes-net
+
+volumes:
+  oracle-data:
+
+networks:
+  ordenes-net:

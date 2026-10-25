@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Gestión de Órdenes Operativas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Contenedor central tipo Card minimalista -->
+    <div class="app-shell">
+        <!-- Encabezado compacto -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="brand-badge">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="header-title">Órdenes Operativas</h1>
+                    <span class="header-subtitle">Gestión de Servicios Públicos</span>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <div class="system-status" id="systemStatus" title="Estado de la conexión">
+                    <span class="status-dot"></span>
+                    <span class="status-label">En línea</span>
+                </div>
+
+                <!-- Botón de cambio de tema (Blanco y Negro) -->
+                <button type="button" class="theme-toggle-btn" id="btnThemeToggle" title="Cambiar a modo claro / oscuro" aria-label="Cambiar tema">
+                    <!-- Icono Sol (se muestra en modo oscuro para cambiar a claro) -->
+                    <svg class="theme-icon icon-sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                    <!-- Icono Luna (se muestra en modo claro para cambiar a oscuro) -->
+                    <svg class="theme-icon icon-moon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Navegación por pestañas minimalista -->
+        <nav class="app-nav">
+            <button class="nav-btn active" data-tab="tab-bandeja">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="3" y1="9" x2="21" y2="9"></line>
+                    <line x1="9" y1="21" x2="9" y2="9"></line>
+                </svg>
+                Bandeja
+            </button>
+            <button class="nav-btn" data-tab="tab-nueva">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                </svg>
+                Nueva Orden
+            </button>
+            <button class="nav-btn" data-tab="tab-detalle" id="navTabDetalle">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+                Ficha y Trazabilidad
+            </button>
+        </nav>
+
+        <!-- Contenido principal -->
+        <main class="app-body">
+
+            <!-- PESTAÑA 1: BANDEJA DE ÓRDENES -->
+            <section class="tab-pane active" id="tab-bandeja">
+                <!-- Filtros colapsables / limpios -->
+                <div class="section-box filter-box">
+                    <form id="formFiltros" class="filter-row">
+                        <div class="field-item">
+                            <label for="filtroEstado">Estado</label>
+                            <select id="filtroEstado">
+                                <option value="">Todos los estados</option>
+                                <option value="REGISTRADA">REGISTRADA</option>
+                                <option value="ASIGNADA">ASIGNADA</option>
+                                <option value="EN_EJECUCION">EN EJECUCIÓN</option>
+                                <option value="SUSPENDIDA">SUSPENDIDA</option>
+                                <option value="EJECUTADA">EJECUTADA</option>
+                                <option value="CERRADA">CERRADA</option>
+                                <option value="CANCELADA">CANCELADA</option>
+                            </select>
+                        </div>
+                        <div class="field-item">
+                            <label for="filtroFechaInicio">Desde</label>
+                            <input type="date" id="filtroFechaInicio">
+                        </div>
+                        <div class="field-item">
+                            <label for="filtroFechaFin">Hasta</label>
+                            <input type="date" id="filtroFechaFin">
+                        </div>
+                        <div class="field-actions">
+                            <button type="submit" class="btn btn-primary" id="btnBuscar">
+                                Buscar
+                            </button>
+                            <button type="button" class="btn btn-ghost" id="btnLimpiarFiltros">
+                                Limpiar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Lista de órdenes -->
+                <div class="section-box table-box">
+                    <div class="box-header">
+                        <div class="header-meta">
+                            <span class="box-title">Listado de Órdenes</span>
+                            <span class="pill-count" id="totalRegistrosBadge">0 registros</span>
+                        </div>
+                        <button class="btn btn-sm btn-ghost" id="btnRefrescarTabla" title="Recargar lista">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="23 4 23 10 17 10"></polyline>
+                                <polyline points="1 20 1 14 7 14"></polyline>
+                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                            </svg>
+                            Actualizar
+                        </button>
+                    </div>
+
+                    <div class="table-wrap">
+                        <table class="minimal-table">
+                            <thead>
+                                <tr>
+                                    <th>N°</th>
+                                    <th>Cliente</th>
+                                    <th>Tipo</th>
+                                    <th>Prioridad</th>
+                                    <th>Estado</th>
+                                    <th>Fecha</th>
+                                    <th class="text-right">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaOrdenesBody">
+                                <tr>
+                                    <td colspan="7" class="empty-cell">Cargando datos...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Barra de Paginación -->
+                    <div class="pager-bar">
+                        <span class="pager-info" id="paginacionInfo">Página 1 de 1</span>
+                        <div class="pager-btns">
+                            <button class="btn btn-sm btn-outline" id="btnPagAnterior" disabled>Anterior</button>
+                            <button class="btn btn-sm btn-outline" id="btnPagSiguiente" disabled>Siguiente</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PESTAÑA 2: NUEVA ORDEN -->
+            <section class="tab-pane" id="tab-nueva">
+                <div class="section-box form-box">
+                    <div class="box-header-clean">
+                        <h2 class="box-title">Registrar Nueva Orden</h2>
+                        <span class="box-desc">Ingreso de requerimiento operativo de servicio</span>
+                    </div>
+
+                    <form id="formCrearOrden" class="minimal-form">
+                        <div class="form-grid-2">
+                            <div class="field-item">
+                                <label for="nuevoCliente">Cliente / Suscriptor <span class="req">*</span></label>
+                                <select id="nuevoCliente" required>
+                                    <option value="">Seleccione cliente...</option>
+                                    <option value="1">1 - María Fernanda Gómez (CC 1020304050)</option>
+                                    <option value="2">2 - Carlos Andrés Rodríguez (CC 79888777)</option>
+                                    <option value="3">3 - Industrias del Valle S.A.S. (NIT 900123456)</option>
+                                    <option value="4">4 - John Smith (CE E4567890)</option>
+                                    <option value="5">5 - Comercializadora Norte S.A.S. [INACTIVO]</option>
+                                </select>
+                            </div>
+
+                            <div class="form-grid-2-inner">
+                                <div class="field-item">
+                                    <label for="nuevoTipo">Tipo de Trabajo <span class="req">*</span></label>
+                                    <select id="nuevoTipo" required>
+                                        <option value="INSTALACION">INSTALACIÓN (120h)</option>
+                                        <option value="REPARACION" selected>REPARACIÓN (24h)</option>
+                                        <option value="SUSPENSION">SUSPENSIÓN (48h)</option>
+                                        <option value="RECONEXION">RECONEXIÓN (24h)</option>
+                                        <option value="LECTURA">LECTURA (72h)</option>
+                                        <option value="CAMBIO_MEDIDOR">CAMBIO MEDIDOR (96h)</option>
+                                    </select>
+                                </div>
+                                <div class="field-item">
+                                    <label for="nuevaPrioridad">Prioridad</label>
+                                    <select id="nuevaPrioridad">
+                                        <option value="BAJA">Baja</option>
+                                        <option value="MEDIA" selected>Media</option>
+                                        <option value="ALTA">Alta</option>
+                                        <option value="CRITICA">Crítica</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field-item">
+                            <label for="nuevaDireccion">Dirección del Servicio</label>
+                            <input type="text" id="nuevaDireccion" placeholder="Dirección completa del inmueble" maxlength="250">
+                        </div>
+
+                        <div class="field-item">
+                            <label for="nuevaDescripcion">Descripción del Requerimiento <span class="req">*</span></label>
+                            <textarea id="nuevaDescripcion" rows="3" placeholder="Detalle técnico de la labor a ejecutar..." required maxlength="1000"></textarea>
+                        </div>
+
+                        <div class="form-action-bar">
+                            <button type="submit" class="btn btn-primary" id="btnGuardarOrden">
+                                Guardar y Emitir Orden
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- PESTAÑA 3: FICHA Y TRAZABILIDAD -->
+            <section class="tab-pane" id="tab-detalle">
+                <!-- Buscador directo -->
+                <div class="section-box search-direct-box">
+                    <form id="formBuscarOrdenDirecta" class="search-form">
+                        <label for="inputBuscarId">Número de Orden</label>
+                        <div class="search-input-group">
+                            <input type="number" id="inputBuscarId" placeholder="Ej: 1" min="1" required>
+                            <button type="submit" class="btn btn-primary btn-sm">Consultar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="detalleContenedor" class="detalle-wrapper" style="display: none;">
+                    <!-- Tarjeta con resumen y datos -->
+                    <div class="section-box ficha-box">
+                        <div class="ficha-header">
+                            <div>
+                                <span class="ficha-sub">Detalle de la Orden</span>
+                                <h2 class="ficha-id" id="detId">Orden #--</h2>
+                            </div>
+                            <div id="detEstadoBadge"></div>
+                        </div>
+
+                        <div class="ficha-grid">
+                            <div class="ficha-item">
+                                <span class="label">Cliente</span>
+                                <span class="val" id="detClienteNombre">--</span>
+                                <span class="sub" id="detClienteDoc">--</span>
+                            </div>
+                            <div class="ficha-item">
+                                <span class="label">Tipo</span>
+                                <span class="val" id="detTipoCodigo">--</span>
+                                <span class="sub" id="detTipoSla">--</span>
+                            </div>
+                            <div class="ficha-item">
+                                <span class="label">Prioridad</span>
+                                <span class="val" id="detPrioridad">--</span>
+                            </div>
+                            <div class="ficha-item">
+                                <span class="label">Versión</span>
+                                <span class="val" id="detVersion">--</span>
+                            </div>
+                            <div class="ficha-item col-span-2">
+                                <span class="label">Dirección</span>
+                                <span class="val" id="detDireccion">--</span>
+                            </div>
+                            <div class="ficha-item col-span-2">
+                                <span class="label">Descripción</span>
+                                <p class="desc-text" id="detDescripcion">--</p>
+                            </div>
+                            <div class="ficha-item">
+                                <span class="label">Creación</span>
+                                <span class="sub" id="detFechaCreacion">--</span>
+                            </div>
+                            <div class="ficha-item">
+                                <span class="label">Último Cambio</span>
+                                <span class="sub" id="detFechaEstado">--</span>
+                            </div>
+                        </div>
+
+                        <div class="ficha-footer">
+                            <button type="button" class="btn btn-primary btn-block" id="btnAbrirCambioEstado">
+                                Cambiar Estado de la Orden
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Trazabilidad / Historial -->
+                    <div class="section-box timeline-box">
+                        <div class="box-header-clean">
+                            <h3 class="box-title">Trazabilidad Histórica</h3>
+                            <span class="box-desc">Registro inmutable de estados y auditoría</span>
+                        </div>
+                        <div class="timeline-list" id="timelineContainer"></div>
+                    </div>
+                </div>
+
+                <div id="detalleVacio" class="empty-placeholder">
+                    <p>Consulte un número de orden para visualizar su trazabilidad.</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer discreto -->
+        <footer class="app-footer">
+            <span>Sistema de Órdenes Operativas</span>
+            <span>Oracle 23ai + Spring Boot</span>
+        </footer>
+    </div>
+
+    <!-- Modal Cambio de Estado -->
+    <div class="modal-backdrop" id="modalCambioEstado">
+        <div class="modal-card">
+            <div class="modal-head">
+                <div>
+                    <h3 class="modal-title">Actualizar Estado</h3>
+                    <span class="modal-sub" id="modalOrdenSub">Orden #--</span>
+                </div>
+                <button type="button" class="modal-close" id="btnCerrarModal">&times;</button>
+            </div>
+
+            <form id="formActualizarEstado" class="modal-form">
+                <div class="field-item">
+                    <label>Estado Actual</label>
+                    <div id="modalEstadoActualPill">--</div>
+                </div>
+
+                <div class="field-item">
+                    <label for="modalNuevoEstado">Nuevo Estado <span class="req">*</span></label>
+                    <select id="modalNuevoEstado" required>
+                        <option value="">Seleccione estado destino...</option>
+                        <option value="REGISTRADA">REGISTRADA</option>
+                        <option value="ASIGNADA">ASIGNADA</option>
+                        <option value="EN_EJECUCION">EN EJECUCIÓN</option>
+                        <option value="SUSPENDIDA">SUSPENDIDA</option>
+                        <option value="EJECUTADA">EJECUTADA</option>
+                        <option value="CERRADA">CERRADA</option>
+                        <option value="CANCELADA">CANCELADA</option>
+                    </select>
+                </div>
+
+                <div class="field-item">
+                    <label for="modalObservacion">Observación</label>
+                    <textarea id="modalObservacion" rows="3" placeholder="Motivo o justificación del cambio..." maxlength="1000"></textarea>
+                    <span class="hint-text">Requerido en suspensiones, cancelaciones o reprocesos</span>
+                </div>
+
+                <input type="hidden" id="modalVersion">
+
+                <div class="modal-btns">
+                    <button type="button" class="btn btn-ghost" id="btnCancelarModal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="btnConfirmarCambio">
+                        Guardar Cambio
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toasts -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
